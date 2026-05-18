@@ -1,0 +1,9 @@
+.DS_Store
+
+.claude/
+
+*.pyc
+.venv/
+__pycache__/
+dist/
+.ruff_cache/
