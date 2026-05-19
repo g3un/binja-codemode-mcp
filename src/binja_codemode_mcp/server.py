@@ -2,9 +2,11 @@ import asyncio
 import logging
 import os
 import threading
+from typing import Annotated
 
 from binaryninja import log_error, log_info, log_warn
 from fastmcp import FastMCP
+from pydantic import Field
 
 from .executor import run
 
@@ -15,7 +17,23 @@ mcp = FastMCP("binja-codemode-mcp")
 
 
 @mcp.tool
-def execute(code: str) -> dict:
+def execute(
+    code: Annotated[
+        str,
+        Field(
+            description=(
+                "Python code to execute. Print concise, filtered results; use "
+                "dir/help/inspect for API discovery. Do not print full object "
+                "dumps or large collections unless requested."
+            )
+        ),
+    ],
+) -> dict:
+    """Execute code.
+
+    Prefer small scripts that print filtered summaries. Do not dump whole Binary
+    Ninja objects or large collections unless explicitly requested.
+    """
     return run(code)
 
 
@@ -75,9 +93,7 @@ def start(bind: str) -> None:
     except ValueError as exc:
         log_error(str(exc), logger=LOGGER)
         return
-    if host not in LOOPBACK and not os.environ.get(
-        "BINJA_CODEMODE_MCP_INSECURE_BIND"
-    ):
+    if host not in LOOPBACK and not os.environ.get("BINJA_CODEMODE_MCP_INSECURE_BIND"):
         log_error(
             f"refusing to bind non-loopback host '{host}'. "
             "Set BINJA_CODEMODE_MCP_INSECURE_BIND=1 to override.",
