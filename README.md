@@ -19,8 +19,11 @@ bnpm add binja-codemode-mcp --git https://codeberg.org/g3un/binja-codemode-mcp
 Register the gateway MCP server with your agent:
 
 ```bash
-claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/binja-mcp binja-codemode-gateway
-codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-mcp binja-codemode-gateway
+# Replace /path/to/binja-codemode-mcp with the plugin checkout path.
+# macOS/Linux: ~/.local/share/bnpm/plugins/binja-codemode-mcp
+# Windows:     %LOCALAPPDATA%\bnpm\plugins\binja-codemode-mcp
+claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/binja-codemode-mcp binja-codemode-gateway
+codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-mcp binja-codemode-gateway
 ```
 
 Start the GUI server from Binary Ninja with `Binja Codemode MCP\Start`, then
