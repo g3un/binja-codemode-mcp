@@ -13,14 +13,14 @@ Install the Binary Ninja GUI plugin with
 [bnpm](https://codeberg.org/g3un/bnpm):
 
 ```bash
-uvx bnpm add binja-codemode-mcp --git https://codeberg.org/g3un/binja-codemode-mcp
+bnpm add binja-codemode-mcp --git https://codeberg.org/g3un/binja-codemode-mcp
 ```
 
 Register the gateway MCP server with your agent:
 
 ```bash
-claude mcp add binja-mcp --scope user -- uv run --directory /path/to/binja-mcp binja-codemode-gateway
-codex mcp add binja-mcp --scope user -- uv run --directory /path/to/binja-mcp binja-codemode-gateway
+claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/binja-mcp binja-codemode-gateway
+codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-mcp binja-codemode-gateway
 ```
 
 Start the GUI server from Binary Ninja with `Binja Codemode MCP\Start`, then
