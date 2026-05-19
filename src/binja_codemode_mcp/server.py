@@ -48,14 +48,14 @@ class _BNHandler(logging.Handler):
             log_info(msg, logger=LOGGER)
 
 
-def _route_uvicorn_logs() -> None:
+def _quiet_server_logs() -> None:
     handler = _BNHandler()
     handler.setFormatter(logging.Formatter("%(message)s"))
-    for name in ("uvicorn", "uvicorn.error"):
+    for name in ("uvicorn", "uvicorn.error", "fastmcp"):
         lg = logging.getLogger(name)
         lg.handlers = [handler]
         lg.propagate = False
-        lg.setLevel(logging.INFO)
+        lg.setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").disabled = True
 
 
@@ -101,7 +101,7 @@ def start(bind: str) -> None:
         )
         return
 
-    _route_uvicorn_logs()
+    _quiet_server_logs()
     loop = asyncio.new_event_loop()
     uvicorn_config = {
         "log_config": None,
@@ -116,7 +116,7 @@ def start(bind: str) -> None:
                 transport="http",
                 host=host,
                 port=port,
-                log_level="info",
+                log_level="warning",
                 uvicorn_config=uvicorn_config,
             )
         except asyncio.CancelledError:
