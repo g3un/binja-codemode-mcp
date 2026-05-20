@@ -27,8 +27,9 @@ codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-m
 ```
 
 For an `http` session, start a Binary Ninja MCP HTTP server first. In the GUI,
-use `Binja Codemode MCP\Start`. In a headless environment, use a Python that
-can import Binary Ninja and run:
+use `Binja Codemode MCP\Start`. The GUI plugin also adds Binary Ninja settings
+for the HTTP bind address (`host:port`) and autostart. In a headless
+environment, use a Python that can import Binary Ninja and run:
 
 ```bash
 uv run --directory /path/to/binja-codemode-mcp binja-codemode-http
