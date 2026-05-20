@@ -23,8 +23,9 @@ async def create_session(
         Literal["http", "stdio"],
         Field(
             description=(
-                "'http' connects to BINJA_CODEMODE_MCP_HTTP_URL; GUI uses http. "
-                "'stdio' launches a worker."
+                "'http' connects to an already-running Binary Ninja MCP server "
+                "at BINJA_CODEMODE_MCP_HTTP_URL. 'stdio' launches a dedicated "
+                "worker process."
             )
         ),
     ],

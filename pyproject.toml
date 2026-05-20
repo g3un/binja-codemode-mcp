@@ -10,6 +10,7 @@ dependencies = [
 
 [project.scripts]
 binja-codemode-gateway = "binja_codemode_mcp.gateway:main"
+binja-codemode-http = "binja_codemode_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

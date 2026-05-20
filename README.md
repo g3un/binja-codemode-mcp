@@ -26,10 +26,17 @@ claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/bi
 codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-mcp binja-codemode-gateway
 ```
 
-Start the GUI server from Binary Ninja with `Binja Codemode MCP\Start`, then
-create an `http` session from the agent. Create a `stdio` session to launch a
-dedicated worker process instead. Headless Binary Ninja requires Binary Ninja
-Commercial or higher.
+For an `http` session, start a Binary Ninja MCP HTTP server first. In the GUI,
+use `Binja Codemode MCP\Start`. In a headless environment, use a Python that
+can import Binary Ninja and run:
+
+```bash
+uv run --directory /path/to/binja-codemode-mcp binja-codemode-http
+```
+
+Then create an `http` session from the agent. Create a `stdio` session to
+launch a dedicated worker process instead. Headless Binary Ninja requires
+Binary Ninja Commercial or higher.
 
 ## Environment
 
@@ -37,5 +44,5 @@ Commercial or higher.
   sessions. Defaults to `http://127.0.0.1:44044/mcp/`.
 - `BINJA_CODEMODE_MCP_PYTHON`: Python executable used by gateway `stdio`
   sessions. Defaults to the Python running the gateway.
-- `BINJA_CODEMODE_MCP_INSECURE_BIND`: set to `1` in the Binary Ninja GUI plugin
-  process to allow the GUI HTTP server to bind to a non-loopback host.
+- `BINJA_CODEMODE_MCP_INSECURE_BIND`: set to `1` in the Binary Ninja process
+  running the HTTP server to allow binding to a non-loopback host.

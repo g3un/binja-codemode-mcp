@@ -1,6 +1,8 @@
 import asyncio
+import argparse
 import logging
 import os
+import sys
 import threading
 from typing import Annotated
 
@@ -12,6 +14,7 @@ from .executor import run
 
 LOGGER = "Binja Codemode MCP"
 LOOPBACK = {"127.0.0.1", "::1", "localhost"}
+DEFAULT_BIND = "127.0.0.1:44044"
 
 mcp = FastMCP("binja-codemode-mcp")
 
@@ -48,8 +51,7 @@ class _BNHandler(logging.Handler):
             log_info(msg, logger=LOGGER)
 
 
-def _quiet_server_logs() -> None:
-    handler = _BNHandler()
+def _configure_server_logs(handler: logging.Handler) -> None:
     handler.setFormatter(logging.Formatter("%(message)s"))
     for name in ("uvicorn", "uvicorn.error", "fastmcp"):
         lg = logging.getLogger(name)
@@ -59,11 +61,45 @@ def _quiet_server_logs() -> None:
     logging.getLogger("uvicorn.access").disabled = True
 
 
+def _quiet_server_logs() -> None:
+    _configure_server_logs(_BNHandler())
+
+
+def _cli_server_logs() -> None:
+    _configure_server_logs(logging.StreamHandler())
+
+
 def _parse_bind(value: str) -> tuple[str, int]:
     host, sep, port = value.rpartition(":")
     if not sep:
         raise ValueError(f"invalid bind '{value}', expected host:port")
     return host, int(port)
+
+
+def _validated_bind(bind: str) -> tuple[str, int]:
+    host, port = _parse_bind(bind)
+    if host not in LOOPBACK and not os.environ.get("BINJA_CODEMODE_MCP_INSECURE_BIND"):
+        raise ValueError(
+            f"refusing to bind non-loopback host '{host}'. "
+            "Set BINJA_CODEMODE_MCP_INSECURE_BIND=1 to override."
+        )
+    return host, port
+
+
+async def _run_http(host: str, port: int) -> None:
+    uvicorn_config = {
+        "log_config": None,
+        "access_log": False,
+        "lifespan": "on",
+    }
+    await mcp.run_http_async(
+        show_banner=False,
+        transport="http",
+        host=host,
+        port=port,
+        log_level="warning",
+        uvicorn_config=uvicorn_config,
+    )
 
 
 _loop: asyncio.AbstractEventLoop | None = None
@@ -89,36 +125,17 @@ def start(bind: str) -> None:
         log_info("already running", logger=LOGGER)
         return
     try:
-        host, port = _parse_bind(bind)
+        host, port = _validated_bind(bind)
     except ValueError as exc:
         log_error(str(exc), logger=LOGGER)
-        return
-    if host not in LOOPBACK and not os.environ.get("BINJA_CODEMODE_MCP_INSECURE_BIND"):
-        log_error(
-            f"refusing to bind non-loopback host '{host}'. "
-            "Set BINJA_CODEMODE_MCP_INSECURE_BIND=1 to override.",
-            logger=LOGGER,
-        )
         return
 
     _quiet_server_logs()
     loop = asyncio.new_event_loop()
-    uvicorn_config = {
-        "log_config": None,
-        "access_log": False,
-        "lifespan": "on",
-    }
 
     async def _serve() -> None:
         try:
-            await mcp.run_http_async(
-                show_banner=False,
-                transport="http",
-                host=host,
-                port=port,
-                log_level="warning",
-                uvicorn_config=uvicorn_config,
-            )
+            await _run_http(host, port)
         except asyncio.CancelledError:
             pass
         except BaseException as exc:
@@ -147,3 +164,33 @@ def stop() -> None:
         _thread.join(timeout=2)
     _loop, _task, _thread = None, None, None
     log_info("stopped", logger=LOGGER)
+
+
+def serve(bind: str = DEFAULT_BIND) -> None:
+    host, port = _validated_bind(bind)
+    _cli_server_logs()
+    print(f"{LOGGER}: listening on http://{host}:{port}/mcp/", flush=True)
+    try:
+        asyncio.run(_run_http(host, port))
+    except KeyboardInterrupt:
+        print(f"{LOGGER}: stopped", file=sys.stderr, flush=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Run the Binary Ninja Codemode MCP HTTP server."
+    )
+    parser.add_argument(
+        "--bind",
+        default=DEFAULT_BIND,
+        help=f"host:port to bind the HTTP server to (default: {DEFAULT_BIND})",
+    )
+    args = parser.parse_args()
+    try:
+        serve(args.bind)
+    except ValueError as exc:
+        parser.error(str(exc))
+
+
+if __name__ == "__main__":
+    main()
