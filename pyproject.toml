@@ -4,13 +4,11 @@ version = "0.1.0"
 description = "A codemode MCP for Binary Ninja."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "fastmcp>=2.0",
-]
+dependencies = ["fastmcp>=2.0"]
 
 [project.scripts]
-binja-codemode-gateway = "binja_codemode_mcp.gateway:main"
-binja-codemode-http = "binja_codemode_mcp.server:main"
+gateway = "binja_codemode_mcp.gateway:main"
+serve = "binja_codemode_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

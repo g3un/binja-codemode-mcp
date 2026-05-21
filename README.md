@@ -17,13 +17,24 @@ bnpm add binja-codemode-mcp --git https://codeberg.org/g3un/binja-codemode-mcp
 ```
 
 Register the gateway MCP server with your agent:
-
 ```bash
 # Replace /path/to/binja-codemode-mcp with the plugin checkout path.
 # macOS/Linux: ~/.local/share/bnpm/plugins/binja-codemode-mcp
 # Windows:     %LOCALAPPDATA%\bnpm\plugins\binja-codemode-mcp
-claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/binja-codemode-mcp binja-codemode-gateway
-codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-mcp binja-codemode-gateway
+claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/binja-codemode-mcp gateway
+codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-mcp gateway
+```
+
+Or add via JSON config:
+```json
+{
+  "mcpServers": {
+    "binja-codemode-mcp": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/binja-codemode-mcp", "gateway"]
+    }
+  }
+}
 ```
 
 For an `http` session, start a Binary Ninja MCP HTTP server first. In the GUI,
@@ -32,7 +43,7 @@ for the HTTP bind address (`host:port`) and autostart. In a headless
 environment, use a Python that can import Binary Ninja and run:
 
 ```bash
-uv run --directory /path/to/binja-codemode-mcp binja-codemode-http
+uv run --directory /path/to/binja-codemode-mcp serve
 ```
 
 Then create an `http` session from the agent. Create a `stdio` session to
