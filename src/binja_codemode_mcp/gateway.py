@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import os
-import sys
 from typing import Annotated, Literal
 
 from fastmcp import FastMCP
 from pydantic import Field
 
+from ._bnpm_runtime import plugin_python
 from .session import GatewaySessionRegistry
 from .transports import HttpTransport, StdioTransport
 
@@ -14,7 +14,6 @@ mcp = FastMCP("binja-codemode-mcp-gateway")
 _sessions = GatewaySessionRegistry()
 DEFAULT_HTTP_URL = "http://127.0.0.1:44044/mcp/"
 HTTP_URL_ENV = "BINJA_CODEMODE_MCP_HTTP_URL"
-PYTHON_ENV = "BINJA_CODEMODE_MCP_PYTHON"
 
 
 @mcp.tool
@@ -25,12 +24,12 @@ async def create_session(
             description=(
                 "'http' connects to an already-running Binary Ninja MCP server "
                 "at BINJA_CODEMODE_MCP_HTTP_URL. 'stdio' launches a dedicated "
-                "worker process."
+                "worker process in the bnpm Binary Ninja environment."
             )
         ),
     ],
 ) -> dict:
-    """Create a session. Env: BINJA_CODEMODE_MCP_HTTP_URL, BINJA_CODEMODE_MCP_PYTHON."""
+    """Create a session. Env: BINJA_CODEMODE_MCP_HTTP_URL."""
     session_transport = _make_transport(transport)
     session = _sessions.add(
         transport=session_transport,
@@ -94,7 +93,12 @@ def _make_transport(transport: str):
     if transport == "http":
         return HttpTransport(url=os.environ.get(HTTP_URL_ENV, DEFAULT_HTTP_URL))
     if transport == "stdio":
-        return StdioTransport(command=os.environ.get(PYTHON_ENV, sys.executable))
+        worker = plugin_python()
+        return StdioTransport(
+            command=str(worker.command),
+            env=worker.env,
+            cwd=str(worker.cwd),
+        )
     raise ValueError(f"unsupported transport: {transport}")
 
 

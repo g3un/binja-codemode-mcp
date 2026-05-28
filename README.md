@@ -47,14 +47,12 @@ uv run --directory /path/to/binja-codemode-mcp serve
 ```
 
 Then create an `http` session from the agent. Create a `stdio` session to
-launch a dedicated worker process instead. Headless Binary Ninja requires
-Binary Ninja Commercial or higher.
+launch a dedicated worker process in the bnpm Binary Ninja environment instead.
+Headless Binary Ninja requires Binary Ninja Commercial or higher.
 
 ## Environment
 
 - `BINJA_CODEMODE_MCP_HTTP_URL`: MCP HTTP endpoint used by gateway `http`
   sessions. Defaults to `http://127.0.0.1:44044/mcp/`.
-- `BINJA_CODEMODE_MCP_PYTHON`: Python executable used by gateway `stdio`
-  sessions. Defaults to the Python running the gateway.
 - `BINJA_CODEMODE_MCP_INSECURE_BIND`: set to `1` in the Binary Ninja process
   running the HTTP server to allow binding to a non-loopback host.
