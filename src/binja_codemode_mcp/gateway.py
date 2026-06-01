@@ -96,6 +96,7 @@ def _make_transport(transport: str):
         worker = plugin_python()
         return StdioTransport(
             command=str(worker.command),
+            args=worker.args,
             env=worker.env,
             cwd=str(worker.cwd),
         )

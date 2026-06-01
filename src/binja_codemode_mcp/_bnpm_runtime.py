@@ -15,6 +15,7 @@ PLUGIN_NAME = "binja-codemode-mcp"
 @dataclass(frozen=True)
 class PluginPython:
     command: Path
+    args: list[str]
     cwd: Path
     env: dict[str, str]
 
@@ -27,6 +28,7 @@ def plugin_python(
     plugin_path = _resolve_plugin_path(name)
     return PluginPython(
         command=_resolve_plugin_python_executable(),
+        args=_plugin_worker_args(),
         cwd=plugin_path,
         env=_build_plugin_python_env(name, plugin_path, env=env),
     )
@@ -52,6 +54,7 @@ def _build_plugin_python_env(
     _, import_base = entry
 
     result = dict(os.environ if env is None else env)
+    result["VIRTUAL_ENV"] = str(_bnpm_venv_dir())
     result["PYTHONPATH"] = _join_pythonpath(
         _collect_plugin_pythonpath_entries(import_base),
         result.get("PYTHONPATH"),
@@ -77,6 +80,21 @@ def _collect_plugin_pythonpath_entries(import_base: Path) -> tuple[Path, ...]:
     if packages.exists():
         entries.append(packages)
     return tuple(entries)
+
+
+def _plugin_worker_args() -> list[str]:
+    packages = _bnpm_package_dir()
+    add_packages = (
+        f"site.addsitedir({str(packages)!r}); " if packages.exists() else ""
+    )
+    return [
+        "-c",
+        (
+            "import runpy, site; "
+            f"{add_packages}"
+            "runpy.run_module('binja_codemode_mcp.worker', run_name='__main__')"
+        ),
+    ]
 
 
 @cache
@@ -158,10 +176,15 @@ def _bnpm_package_dir() -> Path:
 
 
 @cache
+def _bnpm_venv_dir() -> Path:
+    return _bnpm_data_dir() / "venv"
+
+
+@cache
 def _bnpm_venv_python() -> Path:
     if platform.system() == "Windows":
-        return _bnpm_data_dir() / "venv" / "Scripts" / "python.exe"
-    return _bnpm_data_dir() / "venv" / "bin" / "python"
+        return _bnpm_venv_dir() / "Scripts" / "python.exe"
+    return _bnpm_venv_dir() / "bin" / "python"
 
 
 @cache
