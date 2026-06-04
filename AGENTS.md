@@ -1,6 +1,13 @@
 # Binja Codemode MCP: Agent Guide
 
-## Tools
+## Coding Guidelines
+
+- Do not introduce unnecessary code duplication; reuse existing data, helpers, types, and patterns where they already fit.
+- Do not keep compatibility aliases, wrappers, or deprecated exports unless the user explicitly asks for backward compatibility.
+- Do not implement features, behaviors, or abstractions that were not requested by the user.
+- Do not add, change, or rely on environment variables unless the user explicitly asks for them.
+
+## Development Tools
 
 - Use `uv` for Python project management.
 
