@@ -10,7 +10,26 @@ from ._bnpm_runtime import plugin_python
 from .session import GatewaySessionRegistry
 from .transports import HttpTransport, StdioTransport
 
-mcp = FastMCP("binja-codemode-mcp-gateway")
+INSTRUCTIONS = """\
+Binary Ninja codemode MCP: run Python against a live Binary Ninja interpreter.
+Only what you print returns to the model — do loops/filtering/traversal inside
+one execute() call and print short summaries; never dump whole objects or large
+collections. Use dir/help/inspect to discover the API.
+
+Workflow:
+1. create_session(transport): 'stdio' = a private headless worker you own;
+   'http' = attach to the user's running (possibly GUI) Binary Ninja.
+2. execute(session_id, code): STATEFUL — globals persist across calls, so load
+   the binary once and reuse `bv`.
+3. close_session(session_id) when done.
+
+Safety: an 'http' session is SHARED. Treat the user's view and GUI as READ-ONLY
+— no patching, renaming, comments, type edits, create_database, or GUI calls
+(openFilename/closeTab/navigate/...) unless explicitly asked. There, `bn.load()`
+is a safe private copy that is not shown in the GUI.
+"""
+
+mcp = FastMCP("binja-codemode-mcp-gateway", instructions=INSTRUCTIONS)
 _sessions = GatewaySessionRegistry()
 DEFAULT_HTTP_URL = "http://127.0.0.1:44044/mcp/"
 HTTP_URL_ENV = "BINJA_CODEMODE_MCP_HTTP_URL"
