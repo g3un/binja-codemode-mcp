@@ -37,17 +37,26 @@ Or add via JSON config:
 }
 ```
 
-For an `http` session, start a Binary Ninja MCP HTTP server first. In the GUI,
-use `Binja Codemode MCP\Start`. The GUI plugin also adds Binary Ninja settings
-for the HTTP bind address (`host:port`) and autostart. In a headless
-environment, use a Python that can import Binary Ninja and run:
+Choose a session transport depending on how you want the agent to reach
+Binary Ninja:
 
+- `stdio`: launches a dedicated headless Binary Ninja worker process for the
+  session. This is the normal headless mode and does not require a separate
+  HTTP server.
+- `http`: connects to an already-running Binary Ninja MCP HTTP server. Use this
+  when you want to attach to the GUI process, or when you specifically want to
+  expose a headless Binary Ninja process over HTTP.
+
+For an `http` session from the GUI, start the server with
+`Binja Codemode MCP\Start`. The GUI plugin also adds Binary Ninja settings for
+the HTTP bind address (`host:port`) and autostart.
+
+For an `http` session from a headless environment, use a Python that can import
+Binary Ninja and run:
 ```bash
 uv run --directory /path/to/binja-codemode-mcp serve
 ```
 
-Then create an `http` session from the agent. Create a `stdio` session to
-launch a dedicated worker process in the bnpm Binary Ninja environment instead.
 Headless Binary Ninja requires Binary Ninja Commercial or higher.
 
 ## Environment
