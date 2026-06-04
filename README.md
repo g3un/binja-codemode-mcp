@@ -7,7 +7,7 @@ A codemode MCP for Binary Ninja:
   interpreter.
 - Leave sandboxing and permission control to the MCP server side.
 
-## Usage
+## Installation
 
 Install the Binary Ninja GUI plugin with
 [bnpm](https://codeberg.org/g3un/bnpm):
@@ -16,16 +16,26 @@ Install the Binary Ninja GUI plugin with
 bnpm add binja-codemode-mcp --git https://codeberg.org/g3un/binja-codemode-mcp
 ```
 
-Register the gateway MCP server with your agent:
+Use the plugin directory installed by `bnpm` as `/path/to/binja-codemode-mcp`
+in all commands below. The default install path is:
+
+- macOS/Linux: `~/.local/share/bnpm/plugins/binja-codemode-mcp`
+- Windows: `%LOCALAPPDATA%\bnpm\plugins\binja-codemode-mcp`
+
+### MCP server
+
+Register the gateway MCP server with an MCP-capable agent:
+
 ```bash
-# Replace /path/to/binja-codemode-mcp with the plugin checkout path.
-# macOS/Linux: ~/.local/share/bnpm/plugins/binja-codemode-mcp
-# Windows:     %LOCALAPPDATA%\bnpm\plugins\binja-codemode-mcp
+# Claude Code
 claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/binja-codemode-mcp gateway
+
+# Codex CLI
 codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-mcp gateway
 ```
 
 Or add via JSON config:
+
 ```json
 {
   "mcpServers": {
@@ -36,6 +46,31 @@ Or add via JSON config:
   }
 }
 ```
+
+### Agent Skill
+
+Install the bundled Agent Skill to teach your agent Binary Ninja analysis
+workflows and safety guidelines:
+
+```bash
+# pi
+pi install /path/to/binja-codemode-mcp
+
+# Claude Code, user-wide
+mkdir -p ~/.claude/skills
+ln -s /path/to/binja-codemode-mcp/skills/binja-codemode-mcp ~/.claude/skills/binja-codemode-mcp
+
+# Codex CLI, user-wide
+mkdir -p ~/.agents/skills
+ln -s /path/to/binja-codemode-mcp/skills/binja-codemode-mcp ~/.agents/skills/binja-codemode-mcp
+```
+
+For project-local skill installs, use `.claude/skills/` for Claude Code or
+`.agents/skills/` for Codex CLI instead. Copy the skill directory instead of
+symlinking if preferred. To update a checkout used by symlinks, run
+`git -C /path/to/binja-codemode-mcp pull`.
+
+## Usage
 
 Choose a session transport depending on how you want the agent to reach
 Binary Ninja:
