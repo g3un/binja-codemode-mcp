@@ -67,8 +67,7 @@ ln -s /path/to/binja-codemode-mcp/skills/binja-codemode-mcp ~/.agents/skills/bin
 
 For project-local skill installs, use `.claude/skills/` for Claude Code or
 `.agents/skills/` for Codex CLI instead. Copy the skill directory instead of
-symlinking if preferred. To update a checkout used by symlinks, run
-`git -C /path/to/binja-codemode-mcp pull`.
+symlinking if preferred.
 
 ## Usage
 
