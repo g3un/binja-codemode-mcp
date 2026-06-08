@@ -21,9 +21,11 @@ print('counts', {
 
 ## Create Small Helper Functions
 
-Helpers persist in the session and reduce repetition.
+Helpers persist in the session and reduce repetition. When output structure matters, do not encode it with indentation alone; use braces, BEGIN/END markers, node IDs with edge lists, JSON, or S-expressions.
 
 ```python
+from itertools import islice
+
 def short_text(tokens_or_obj, limit=120):
     if isinstance(tokens_or_obj, str):
         s = tokens_or_obj
@@ -33,6 +35,42 @@ def short_text(tokens_or_obj, limit=120):
         except TypeError:
             s = str(tokens_or_obj)
     return s.replace('\n', ' ')[:limit]
+
+def line_text(line):
+    tokens = getattr(line, 'tokens', None)
+    if tokens is None:
+        return str(line)
+    return ''.join(tok.text for tok in tokens)
+
+def print_braced_lines(lines, max_lines=120):
+    # For Binary Ninja text lines whose nesting may otherwise be indentation-only.
+    rendered = [line_text(line).rstrip() for line in islice(lines, max_lines)]
+    has_block_braces = any(
+        line.strip() in {'{', '}'} or line.rstrip().endswith('{') or line.lstrip().startswith('}')
+        for line in rendered
+    )
+    if has_block_braces:
+        for line in rendered:
+            print(line)
+        return
+
+    indents = [0]
+    for raw in rendered:
+        expanded = raw.expandtabs(4).rstrip()
+        if not expanded.strip():
+            print()
+            continue
+        indent = len(expanded) - len(expanded.lstrip(' '))
+        while indent < indents[-1]:
+            indents.pop()
+            print(' ' * indents[-1] + '}')
+        if indent > indents[-1]:
+            print(' ' * indents[-1] + '{')
+            indents.append(indent)
+        print(' ' * indent + expanded.lstrip(' '))
+    while len(indents) > 1:
+        indents.pop()
+        print(' ' * indents[-1] + '}')
 
 def func_summary(f):
     return {
@@ -85,11 +123,9 @@ else:
     print('callers', [c.name for c in list(f.callers)[:20]])
     print('callees', [c.name for c in list(f.callees)[:20]])
     if f.pseudo_c_if_available:
-        for line in list(f.pseudo_c_if_available.lines)[:80]:
-            print(str(line))
+        print_braced_lines(f.pseudo_c_if_available.lines, max_lines=120)
     elif f.hlil_if_available:
-        for insn in list(f.hlil_if_available.instructions)[:80]:
-            print(hex(insn.address), insn.operation.name, short_text(insn.tokens))
+        print_braced_lines(f.hlil_if_available.root.lines, max_lines=120)
 ```
 
 For address-based lookup:

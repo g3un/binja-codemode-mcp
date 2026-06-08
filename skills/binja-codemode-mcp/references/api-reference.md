@@ -157,12 +157,19 @@ Operation enums:
 
 For advanced SSA/dataflow APIs, read `advanced-analysis.md`.
 
-For output, prefer operation names and short token strings:
+For output, prefer operation names and short token strings when listing IL facts:
 
 ```python
 text = ''.join(tok.text for tok in insn.tokens)
 print(hex(insn.address), insn.operation.name, text[:120])
 ```
+
+For any LLM-facing output where structure matters, do not rely on indentation
+or whitespace alone. Decompiled code and `f.hlil_if_available.root.lines` may be
+indentation-oriented, instruction `tokens` omit indentation/newlines, and custom
+tree/dataflow dumps often use indentation for depth. Add explicit `{}` braces,
+`BEGIN`/`END` markers, node IDs with edge lists, JSON, or S-expressions; use
+`print_braced_lines()` from `analysis-workflows.md` for indented text lines.
 
 ## API Discovery
 

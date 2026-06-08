@@ -73,19 +73,28 @@ else:
     print('branch', hex(branch.address), short_text(branch.tokens))
     seen = set()
 
-    def show_var(v, depth=0):
-        if str(v) in seen or depth > 3:
+    def show_var(v, depth=0, parent='branch'):
+        node = str(v)
+        if node in seen or depth > 3:
             return
-        seen.add(str(v))
+        seen.add(node)
         definition = ssa.get_ssa_var_definition(v)
         value = ssa.get_ssa_var_value(v)
-        indent = '  ' * depth
         if definition is None:
-            print(indent, 'input', v, 'value', value)
+            print({'kind': 'input', 'var': node, 'parent': parent, 'depth': depth, 'value': str(value)})
             return
-        print(indent, 'def', v, 'value', value, '@', hex(definition.address), definition.operation.name, short_text(definition.tokens))
+        print({
+            'kind': 'def',
+            'var': node,
+            'parent': parent,
+            'depth': depth,
+            'value': str(value),
+            'addr': hex(definition.address),
+            'op': definition.operation.name,
+            'text': short_text(definition.tokens),
+        })
         for source in getattr(definition, 'vars_read', [])[:8]:
-            show_var(source, depth + 1)
+            show_var(source, depth + 1, node)
 
     for v in branch.vars_read:
         show_var(v)

@@ -36,6 +36,7 @@ Use `binja-codemode-mcp` as a code-mode interface to the Binary Ninja Python API
 - Use `dir()`, `inspect.signature()`, and `inspect.getdoc()` for focused API discovery instead of printing entire modules or object graphs.
 - Limit result size explicitly, for example with `[:20]`, `max_items`, thresholds, or top-N sorting.
 - Convert Binary Ninja objects to stable identifiers before printing: addresses, names, operation names, variable names, short token text, and counts.
+- Do not rely on indentation or whitespace alone to encode structure in LLM-facing output. For decompiled code, IL, trees, CFGs, and dataflow traces, emit explicit delimiters or structure such as `{}`, `BEGIN`/`END`, node IDs with edge lists, JSON, or S-expressions.
 - If an operation may be slow, first count or sample results, then narrow the query.
 
 ## Permission Policy for Changes
