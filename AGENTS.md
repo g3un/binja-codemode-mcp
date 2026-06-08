@@ -14,6 +14,7 @@
 ## Commits
 
 - Do not create commits unless the user explicitly asks
+- Before committing code changes, update the project version.
 - One logical change per commit
 - Use Conventional Commits, such as `feat(server): expose execute tool over MCP`
 - Use `!` or `BREAKING CHANGE:` for breaking public API changes
