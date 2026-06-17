@@ -84,9 +84,7 @@ def _collect_plugin_pythonpath_entries(import_base: Path) -> tuple[Path, ...]:
 
 def _plugin_worker_args() -> list[str]:
     packages = _bnpm_package_dir()
-    add_packages = (
-        f"site.addsitedir({str(packages)!r}); " if packages.exists() else ""
-    )
+    add_packages = f"site.addsitedir({str(packages)!r}); " if packages.exists() else ""
     return [
         "-c",
         (
