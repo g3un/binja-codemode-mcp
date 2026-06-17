@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+defaults:
+  run:
+    shell: sh
+
 jobs:
   checks:
     runs-on: codeberg-small
