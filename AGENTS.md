@@ -14,7 +14,8 @@
 ## Commits
 
 - Do not create commits unless the user explicitly asks
-- Before committing code changes, update the project version.
-- One logical change per commit
-- Use Conventional Commits, such as `feat(server): expose execute tool over MCP`
-- Use `!` or `BREAKING CHANGE:` for breaking public API changes
+- Do not bump the project version unless it is release/publish work or the user asks
+- Use SemVer-compatible CalVer without leading zeroes: stable `YYYY.M.D` (`2026.6.17`), prerelease `YYYY.M.D-N` (`2026.6.17-0`)
+- Do not create release tags unless the user explicitly asks; release tags must be `v${project.version}`
+- One logical change per commit; use Conventional Commits, such as `feat(server): expose execute tool over MCP`
+- Avoid overly granular scopes; use `!` or `BREAKING CHANGE:` for breaking public API changes
