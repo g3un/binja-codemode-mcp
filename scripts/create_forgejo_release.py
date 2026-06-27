@@ -32,18 +32,29 @@ class Response:
 
 
 def main() -> None:
+    check_only = sys.argv[1:] == ["--check-tag"]
+    if sys.argv[1:] and not check_only:
+        fail("usage: create_forgejo_release.py [--check-tag]")
+
     project = read_project(ROOT / "pyproject.toml")
-    server_url = trim_trailing_slash(require_env("FORGEJO_SERVER_URL"))
-    repository = require_env("FORGEJO_REPOSITORY")
-    token = require_env("FORGEJO_TOKEN")
-    tag_name = require_env("FORGEJO_REF_NAME")
+    package_name = project["name"]
     version = project["version"]
     validate_version(version)
 
-    if tag_name != f"v{version}":
+    tag_name = require_env("FORGEJO_REF_NAME")
+    expected_tag_name = f"v{version}"
+    if tag_name != expected_tag_name:
         fail(
-            f"Tag must match pyproject.toml version. Tag: {tag_name}; expected: v{version}"
+            f"Tag must match pyproject.toml version. Tag: {tag_name}; "
+            f"expected: {expected_tag_name}"
         )
+    if check_only:
+        print(f"Release tag matches pyproject.toml version: {tag_name}")
+        return
+
+    server_url = trim_trailing_slash(require_env("FORGEJO_SERVER_URL"))
+    repository = require_env("FORGEJO_REPOSITORY")
+    token = require_env("FORGEJO_TOKEN")
 
     encoded_repository = "/".join(
         quote(part, safe="") for part in repository.split("/")
@@ -71,7 +82,7 @@ def main() -> None:
             {
                 "tag_name": tag_name,
                 "name": tag_name,
-                "body": f"Source snapshot for {tag_name}.",
+                "body": f"Source release for {package_name}@{version}.",
                 "draft": False,
                 "prerelease": False,
             }
