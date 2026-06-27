@@ -79,7 +79,7 @@ wheels = [
 
 [[package]]
 name = "binja-codemode-mcp"
-version = "2026.6.17"
+version = "1.20260627.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },

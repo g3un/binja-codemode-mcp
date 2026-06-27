@@ -15,7 +15,9 @@
 
 - Do not create commits unless the user explicitly asks
 - Do not bump the project version unless it is release/publish work or the user asks
-- Use SemVer-compatible CalVer without leading zeroes: stable `YYYY.M.D` (`2026.6.17`), prerelease `YYYY.M.D-N` (`2026.6.17-0`)
+- Use release tags in the form `v{major}.YYYYMMDD.{patch}` (for example, `v1.20260627.0`)
+- Store the Python project version without the tag prefix: `{major}.YYYYMMDD.{patch}` (for example, `1.20260627.0`)
+- `major` and `patch` are non-negative integers without leading zeroes except `0`; `YYYYMMDD` is the release date
 - Do not create release tags unless the user explicitly asks; release tags must be `v${project.version}`
 - One logical change per commit; use Conventional Commits, such as `feat(server): expose execute tool over MCP`
 - Avoid overly granular scopes; use `!` or `BREAKING CHANGE:` for breaking public API changes
