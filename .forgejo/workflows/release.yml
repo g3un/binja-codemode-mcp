@@ -27,22 +27,13 @@ jobs:
       - name: Check out repository
         uses: https://data.forgejo.org/actions/checkout@v4
 
-      - name: Install dependencies
-        run: nix develop path:$PWD --command uv sync --frozen --all-groups
-
       - name: Check release tag
         env:
           FORGEJO_REF_NAME: ${{ github.ref_name }}
-        run: nix develop path:$PWD --command uv run python scripts/create_forgejo_release.py --check-tag
+        run: nix develop path:$PWD --command uv run --frozen --all-groups python scripts/create_forgejo_release.py --check-tag
 
-      - name: Check formatting
-        run: nix develop path:$PWD --command uv run ruff format --check .
-
-      - name: Lint
-        run: nix develop path:$PWD --command uv run ruff check .
-
-      - name: Test
-        run: nix develop path:$PWD --command uv run pytest
+      - name: Run checks
+        run: nix flake check path:$PWD
 
       - name: Create Forgejo release
         env:
@@ -50,4 +41,4 @@ jobs:
           FORGEJO_REPOSITORY: ${{ github.repository }}
           FORGEJO_REF_NAME: ${{ github.ref_name }}
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
-        run: nix develop path:$PWD --command uv run python scripts/create_forgejo_release.py
+        run: nix develop path:$PWD --command uv run --frozen --all-groups python scripts/create_forgejo_release.py

@@ -25,17 +25,5 @@ jobs:
       - name: Check out repository
         uses: https://data.forgejo.org/actions/checkout@v4
 
-      - name: Install dependencies
-        run: nix develop path:$PWD --command uv sync --frozen --all-groups
-
-      - name: Check formatting
-        run: nix develop path:$PWD --command uv run ruff format --check .
-
-      - name: Lint
-        run: nix develop path:$PWD --command uv run ruff check .
-
-      - name: Test
-        run: nix develop path:$PWD --command uv run pytest
-
-      - name: Check package build
-        run: nix develop path:$PWD --command uv build
+      - name: Run checks
+        run: nix flake check path:$PWD
