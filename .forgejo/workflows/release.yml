@@ -12,34 +12,37 @@ jobs:
   release:
     runs-on: codeberg-small
     container:
-      image: ghcr.io/astral-sh/uv:python3.10-alpine
+      image: nixos/nix:latest
     defaults:
       run:
         shell: sh
 
     steps:
       - name: Install CI prerequisites
-        run: apk add --no-cache git nodejs
+        run: |
+          mkdir -p /etc/nix
+          printf '%s\n' 'experimental-features = nix-command flakes' > /etc/nix/nix.conf
+          nix profile install nixpkgs#git nixpkgs#nodejs
 
       - name: Check out repository
         uses: https://data.forgejo.org/actions/checkout@v4
 
       - name: Install dependencies
-        run: uv sync --frozen --all-groups
+        run: nix develop path:$PWD --command uv sync --frozen --all-groups
 
       - name: Check release tag
         env:
           FORGEJO_REF_NAME: ${{ github.ref_name }}
-        run: uv run python scripts/create_forgejo_release.py --check-tag
+        run: nix develop path:$PWD --command uv run python scripts/create_forgejo_release.py --check-tag
 
       - name: Check formatting
-        run: uv run ruff format --check .
+        run: nix develop path:$PWD --command uv run ruff format --check .
 
       - name: Lint
-        run: uv run ruff check .
+        run: nix develop path:$PWD --command uv run ruff check .
 
       - name: Test
-        run: uv run pytest
+        run: nix develop path:$PWD --command uv run pytest
 
       - name: Create Forgejo release
         env:
@@ -47,4 +50,4 @@ jobs:
           FORGEJO_REPOSITORY: ${{ github.repository }}
           FORGEJO_REF_NAME: ${{ github.ref_name }}
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
-        run: uv run python scripts/create_forgejo_release.py
+        run: nix develop path:$PWD --command uv run python scripts/create_forgejo_release.py

@@ -1,0 +1,7 @@
+{
+  "name": "binja-codemode-mcp",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "postCreateCommand": "cd ${containerWorkspaceFolder} && nix develop path:${containerWorkspaceFolder} --command uv sync"
+}

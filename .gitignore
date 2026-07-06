@@ -1,9 +1,20 @@
 .DS_Store
 
+# Local agent/editor state
 .claude/
 
-*.pyc
-.venv/
+# Python
+*.py[cod]
 __pycache__/
-dist/
+.venv/
+.pytest_cache/
 .ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# direnv / Nix local state
+.direnv/
