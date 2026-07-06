@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir -p /etc/nix
           printf '%s\n' 'experimental-features = nix-command flakes' > /etc/nix/nix.conf
-          nix profile install nixpkgs#git nixpkgs#nodejs
+          nix profile add nixpkgs#nodejs
 
       - name: Check out repository
         uses: https://data.forgejo.org/actions/checkout@v4
