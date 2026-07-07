@@ -53,8 +53,8 @@
               mkdir -p "$HOME"
 
               uv sync --frozen --all-groups
-              uv run --frozen --all-groups ruff format --check .
-              uv run --frozen --all-groups ruff check .
+              uv run --frozen --all-groups python -m ruff format --check .
+              uv run --frozen --all-groups python -m ruff check .
               uv run --frozen --all-groups python -m pytest
               uv build
 
