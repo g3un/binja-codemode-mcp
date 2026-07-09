@@ -17,6 +17,7 @@
       mkPkgs = system: import nixpkgs { inherit system; };
       devPackages = pkgs: [
         pkgs.python310
+        pkgs.ruff
         pkgs.uv
       ];
     in
@@ -53,8 +54,8 @@
               mkdir -p "$HOME"
 
               uv sync --frozen --all-groups
-              uv run --frozen --all-groups python -m ruff format --check .
-              uv run --frozen --all-groups python -m ruff check .
+              ruff format --check .
+              ruff check .
               uv run --frozen --all-groups python -m pytest
               uv build
 

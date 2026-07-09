@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import sys
 
 from fastmcp import Client
@@ -29,6 +30,7 @@ class StdioTransport:
         )
         self._client = Client(self._transport)
         self._entered = False
+        self._lock = asyncio.Lock()
 
     def describe(self) -> dict:
         return {
@@ -39,11 +41,13 @@ class StdioTransport:
         }
 
     async def execute(self, code: str) -> dict:
-        client = await self._connect()
-        return result_data(await client.call_tool("execute", {"code": code}))
+        async with self._lock:
+            client = await self._connect()
+            return result_data(await client.call_tool("execute", {"code": code}))
 
     async def close(self) -> dict:
-        await self.aclose()
+        async with self._lock:
+            await self.aclose()
         return {"closed": True}
 
     async def aclose(self) -> None:

@@ -1,11 +1,11 @@
 # Binja Codemode MCP
 
-A codemode MCP for Binary Ninja:
-- Provide an `execute(code)` tool for arbitrary Python execution instead of
-  wrapping selected Binary Ninja APIs.
-- Let agents discover, filter, and call available APIs from inside the Python
-  interpreter.
-- Leave sandboxing and permission control to the MCP server side.
+An MCP bridge for running Python inside Binary Ninja.
+
+The idea is simple: give the agent one `execute(code)` tool instead of wrapping
+a pile of Binary Ninja APIs. The agent can inspect the API, filter results in
+Python, and print the small bit of output it actually needs. Sandboxing and
+permissions stay on the MCP/server side.
 
 ## Installation
 
@@ -16,15 +16,15 @@ Install the Binary Ninja GUI plugin with
 bnpm add binja-codemode-mcp --git https://codeberg.org/g3un/binja-codemode-mcp
 ```
 
-Use the plugin directory installed by `bnpm` as `/path/to/binja-codemode-mcp`
-in all commands below. The default install path is:
+The examples below use `/path/to/binja-codemode-mcp` for the plugin directory
+that `bnpm` installs. By default that is:
 
 - macOS/Linux: `~/.local/share/bnpm/plugins/binja-codemode-mcp`
 - Windows: `%LOCALAPPDATA%\bnpm\plugins\binja-codemode-mcp`
 
 ### MCP server
 
-Register the gateway MCP server with an MCP-capable agent:
+Register the gateway MCP server with your agent:
 
 ```bash
 # Claude Code
@@ -34,7 +34,7 @@ claude mcp add binja-codemode-mcp --scope user -- uv run --directory /path/to/bi
 codex mcp add binja-codemode-mcp -- uv run --directory /path/to/binja-codemode-mcp gateway
 ```
 
-Or add via JSON config:
+Or add it to a JSON config:
 
 ```json
 {
@@ -49,8 +49,8 @@ Or add via JSON config:
 
 ### Agent Skill
 
-Install the bundled Agent Skill to teach your agent Binary Ninja analysis
-workflows and safety guidelines:
+Install the bundled Agent Skill so the agent knows the Binary Ninja workflow
+and the safety rules:
 
 ```bash
 # pi
@@ -65,29 +65,28 @@ mkdir -p ~/.agents/skills
 ln -s /path/to/binja-codemode-mcp/skills/binja-codemode-mcp ~/.agents/skills/binja-codemode-mcp
 ```
 
-For project-local skill installs, use `.claude/skills/` for Claude Code or
-`.agents/skills/` for Codex CLI instead. Copy the skill directory instead of
-symlinking if preferred.
+For project-local installs, use `.claude/skills/` for Claude Code or
+`.agents/skills/` for Codex CLI. Copy the skill directory instead of symlinking
+if that fits your setup better.
 
 ## Usage
 
-Choose a session transport depending on how you want the agent to reach
-Binary Ninja:
+Pick the transport that matches where Binary Ninja is running:
 
-- `stdio`: launches a dedicated headless Binary Ninja worker process for the
-  session. This is the normal headless mode and does not require a separate
-  HTTP server.
-- `http`: connects to an already-running Binary Ninja MCP HTTP server. Use this
-  when you want to attach to the GUI process, or when you specifically want to
-  expose a headless Binary Ninja process over HTTP.
+- `stdio`: starts a private headless Binary Ninja worker for the session. This
+  is the usual headless mode and does not need a separate HTTP server.
+- `http`: connects to a Binary Ninja MCP HTTP server that is already running.
+  Use it to attach to the GUI process, or to a headless process that you exposed
+  over HTTP on purpose.
 
 For an `http` session from the GUI, start the server with
 `Binja Codemode MCP\Start`. The generated bearer token is logged and can be
-shown again with `Binja Codemode MCP\Show Auth Token`. The GUI plugin also adds
-Binary Ninja settings for the HTTP bind address (`host:port`) and autostart.
+shown again with `Binja Codemode MCP\Show Auth Token`. The plugin also adds
+settings for the HTTP bind address (`host:port`) and autostart.
 
 For an `http` session from a headless environment, use a Python that can import
 Binary Ninja and run:
+
 ```bash
 uv run --directory /path/to/binja-codemode-mcp serve
 ```
@@ -101,5 +100,5 @@ for gateway sessions, pass `auth_token` to
 
 ## Environment
 
-- `BINJA_CODEMODE_MCP_HTTP_URL`: MCP HTTP endpoint used by gateway `http`
-  sessions. Defaults to `http://127.0.0.1:44044/mcp/`.
+- `BINJA_CODEMODE_MCP_HTTP_URL`: MCP HTTP endpoint for gateway `http` sessions.
+  Defaults to `http://127.0.0.1:44044/mcp/`.

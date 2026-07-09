@@ -25,9 +25,9 @@ def execute(
         str,
         Field(
             description=(
-                "Python code to execute. Print concise, filtered results; use "
+                "Python code to run. Print concise, filtered results; use "
                 "dir/help/inspect for API discovery. Do not print full object "
-                "dumps or large collections unless requested."
+                "dumps or large collections unless the user asks for them."
             )
         ),
     ],
@@ -35,7 +35,7 @@ def execute(
     """Execute code.
 
     Prefer small scripts that print filtered summaries. Do not dump whole Binary
-    Ninja objects or large collections unless explicitly requested.
+    Ninja objects or large collections unless the user asks for them.
     """
     return run(code)
 
@@ -59,7 +59,6 @@ def _configure_server_logs(handler: logging.Handler) -> None:
         lg.propagate = False
         lg.setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").disabled = True
-
 
 
 def _validated_bind(bind: str) -> tuple[str, int]:
@@ -128,20 +127,25 @@ def start(bind: str) -> None:
     loop = asyncio.new_event_loop()
 
     async def _serve() -> None:
+        global _loop, _task, _thread, _auth_token
         try:
             await _run_http(host, port, api_key)
         except asyncio.CancelledError:
             pass
         except BaseException as exc:
             log_error(f"server crashed: {exc!r}", logger=LOGGER)
+        finally:
+            if _loop is loop:
+                _loop, _task, _thread, _auth_token = None, None, None, None
+            loop.call_soon(loop.stop)
 
+    _loop = loop
+    _auth_token = api_key.token if api_key is not None else None
     _thread = threading.Thread(
         target=_run_loop, args=(loop,), daemon=True, name="binja-codemode-mcp-http"
     )
     _thread.start()
     _task = asyncio.run_coroutine_threadsafe(_serve(), loop)
-    _loop = loop
-    _auth_token = api_key.token if api_key is not None else None
     log_info(f"listening on http://{host}:{port}/mcp/", logger=LOGGER)
     if api_key is not None:
         log_info(f"auth token: {api_key.token}", logger=LOGGER)
@@ -154,11 +158,12 @@ def stop() -> None:
         return
     loop = _loop
     task = _task
+    thread = _thread
     if task is not None:
         task.cancel()
     loop.call_soon_threadsafe(loop.stop)
-    if _thread is not None:
-        _thread.join(timeout=2)
+    if thread is not None:
+        thread.join(timeout=2)
     _loop, _task, _thread, _auth_token = None, None, None, None
     log_info("stopped", logger=LOGGER)
 

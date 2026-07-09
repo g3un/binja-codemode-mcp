@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from urllib.error import HTTPError
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +52,7 @@ def main() -> None:
         print(f"Release tag matches pyproject.toml version: {tag_name}")
         return
 
-    server_url = require_env("FORGEJO_SERVER_URL").rstrip("/")
+    server_url = validate_server_url(require_env("FORGEJO_SERVER_URL"))
     repository = require_env("FORGEJO_REPOSITORY")
     token = require_env("FORGEJO_TOKEN")
 
@@ -136,6 +136,21 @@ def read_project(path: Path) -> dict[str, str]:
     if missing:
         fail(f"pyproject.toml is missing [project] {', '.join(sorted(missing))}.")
     return data
+
+
+def validate_server_url(value: str) -> str:
+    parsed = urlparse(value)
+    if (
+        parsed.scheme != "https"
+        or not parsed.netloc
+        or parsed.username
+        or parsed.password
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+    ):
+        fail("FORGEJO_SERVER_URL must be an https URL without credentials.")
+    return value.rstrip("/")
 
 
 def request(

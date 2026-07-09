@@ -11,7 +11,7 @@ from typing import Any
 PLUGIN_NAME = "binja-codemode-mcp"
 
 
-# Vendored subset of bnpm.runtime.python for launching plugin-owned workers.
+# Small vendored slice of bnpm.runtime.python used to launch plugin workers.
 @dataclass(frozen=True)
 class PluginPython:
     command: Path

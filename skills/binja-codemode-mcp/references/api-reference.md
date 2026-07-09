@@ -1,14 +1,14 @@
 # Binary Ninja API Reference
 
-Use this reference when you need to choose the right Binary Ninja Python API for a binja-codemode-mcp analysis script.
+Use this when you need to pick the right Binary Ninja Python API for an analysis script.
 
 ## Session and Environment
 
-`stdio` sessions usually run in a dedicated headless Binary Ninja worker process. They are the default choice for analysis automation.
+`stdio` sessions usually run in a private headless Binary Ninja worker. Use this for normal analysis automation.
 
-`http` sessions connect to an already-running Binary Ninja MCP HTTP server. This may be the GUI plugin server or a headless process started with `serve`. Because the process may be shared with the user, ask for explicit permission before any state-changing operation.
+`http` sessions attach to a Binary Ninja MCP HTTP server that is already running. That may be the GUI plugin server, or a headless process started with `serve`. The process may be shared with the user, so ask before changing any state.
 
-Both session types are stateful across `execute()` calls. Globals such as `bv`, helper functions, cached addresses, and selected functions persist until the session is closed.
+Both session types keep state across `execute()` calls. Globals such as `bv`, helper functions, cached addresses, and selected functions stay around until the session closes.
 
 ## Loading and Analysis
 
@@ -93,7 +93,7 @@ Common properties:
 - `bb.dominators`, `bb.immediate_dominator`
 - `bb.disassembly_text`
 
-Use these for control-flow summaries, graph traversal, and function complexity estimates.
+These are handy for control-flow summaries, graph traversal, and rough function-complexity checks.
 
 ## Cross References
 
@@ -106,7 +106,7 @@ Common APIs:
 - `bv.get_callers(callee)`
 - `bv.get_callees(caller)`
 
-`get_code_refs()` returns reference source objects. Usually print `ref.address` and `ref.function.name` rather than the full object.
+`get_code_refs()` returns reference source objects. Print `ref.address` and `ref.function.name` instead of the whole object.
 
 ## Symbols, Types, and Data Variables
 
@@ -155,21 +155,21 @@ Operation enums:
 - `bn.MediumLevelILOperation`
 - `bn.HighLevelILOperation`
 
-For advanced SSA/dataflow APIs, read `advanced-analysis.md`.
+For advanced SSA/dataflow APIs, open `advanced-analysis.md`.
 
-For output, prefer operation names and short token strings when listing IL facts:
+When listing IL facts, print operation names and short token strings:
 
 ```python
 text = ''.join(tok.text for tok in insn.tokens)
 print(hex(insn.address), insn.operation.name, text[:120])
 ```
 
-For any LLM-facing output where structure matters, do not rely on indentation
-or whitespace alone. Decompiled code and `f.hlil_if_available.root.lines` may be
-indentation-oriented, instruction `tokens` omit indentation/newlines, and custom
-tree/dataflow dumps often use indentation for depth. Add explicit `{}` braces,
-`BEGIN`/`END` markers, node IDs with edge lists, JSON, or S-expressions; use
-`print_braced_lines()` from `analysis-workflows.md` for indented text lines.
+When structure matters, do not rely on indentation or whitespace alone.
+Decompiled code and `f.hlil_if_available.root.lines` may be indentation-based,
+instruction `tokens` skip indentation/newlines, and custom tree/dataflow dumps
+often use indentation for depth. Add explicit `{}` braces, `BEGIN`/`END`
+markers, node IDs with edge lists, JSON, or S-expressions. For indented text
+lines, use `print_braced_lines()` from `analysis-workflows.md`.
 
 ## API Discovery
 
@@ -185,11 +185,11 @@ print(inspect.signature(bv.get_code_refs))
 print('\n'.join((inspect.getdoc(bv.get_code_refs) or '').splitlines()[:5]))
 ```
 
-Avoid dumping all of `dir(binaryninja)` or entire object representations unless the user explicitly asks.
+Avoid dumping all of `dir(binaryninja)` or whole object representations unless the user asks for that.
 
 ## Operations Requiring Permission
 
-Ask for explicit user permission before using APIs that mutate state or the binary, including:
+Ask the user before using APIs that mutate state or the binary, including:
 
 - Patching and bytes: `bv.write`, `bv.insert`, `bv.remove`, `bv.convert_to_nop`
 - Symbols/types/data: `define_user_symbol`, `define_user_type`, `define_user_data_var`, `undefine_user_data_var`

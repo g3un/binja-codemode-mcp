@@ -1,10 +1,10 @@
 # Advanced Binary Analysis
 
-Use this reference only for advanced analysis tasks such as dataflow, SSA def-use tracking, branch-condition provenance, phi-node inspection, or call argument/return tracking. For ordinary function, string, xref, symbol, and section inspection, prefer `analysis-workflows.md`.
+Use this only for advanced tasks: dataflow, SSA def-use tracking, branch-condition provenance, phi-node inspection, or call argument/return tracking. For plain function, string, xref, symbol, and section work, start with `analysis-workflows.md`.
 
 ## SSA Dataflow APIs
 
-Prefer MLIL SSA for most value-flow questions because it is lower-level than HLIL but easier to inspect than LLIL.
+For most value-flow questions, start with MLIL SSA. It is lower-level than HLIL but much easier to inspect than LLIL.
 
 Common APIs:
 
@@ -18,7 +18,7 @@ Common APIs:
 - `insn.vars_read`, `insn.vars_written`
 - SSA operations such as `MLIL_SET_VAR_SSA`, `MLIL_VAR_PHI`, `MLIL_MEM_PHI`, `MLIL_CALL_SSA`
 
-Output guidelines:
+Output rules:
 
 - Print SSA variable names, definition addresses, use addresses, operation names, and short token text.
 - Do not print complete IL objects.
@@ -27,7 +27,7 @@ Output guidelines:
 
 ## Follow SSA Definitions and Uses
 
-Use this when tracking where a value came from or where it flows.
+Use this to track where a value came from or where it flows.
 
 ```python
 f = bv.get_function_at(addr) or bv.get_functions_containing(addr)[0]
@@ -55,7 +55,7 @@ else:
 
 ## Backward Slice from a Branch Condition
 
-Use this when the user asks why a branch is taken, how a condition is computed, or where a checked value comes from.
+Use this when the user asks why a branch is taken, how a condition is computed, or where a checked value came from.
 
 ```python
 f = bv.get_functions_containing(branch_addr)[0]
@@ -128,7 +128,7 @@ for f in bv.functions:
 
 ## When Not to Use SSA
 
-Avoid SSA-first analysis for broad triage or simple lookup tasks. For these, use the simpler workflows instead:
+Do not start with SSA for broad triage or simple lookup tasks. Use the simpler workflows for:
 
 - Listing functions, imports, strings, sections, or symbols
 - Finding xrefs to a known address or string

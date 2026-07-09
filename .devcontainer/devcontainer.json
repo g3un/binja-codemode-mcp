@@ -3,5 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "remoteUser": "dev",
+  "updateRemoteUserUID": false,
   "postCreateCommand": "cd ${containerWorkspaceFolder} && nix develop path:${containerWorkspaceFolder} --command uv sync"
 }

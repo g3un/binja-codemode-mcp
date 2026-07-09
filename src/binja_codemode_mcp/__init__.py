@@ -1,12 +1,4 @@
-import importlib
-import importlib.util
-import io
-import site
-import sys
-from pathlib import Path
-
 LOGGER = "Binja Codemode MCP"
-_REQUIRED = ("fastmcp",)
 
 try:
     from binaryninja import PluginCommand, core_ui_enabled, log_error, log_info
@@ -15,56 +7,6 @@ except ImportError:
     core_ui_enabled = None
     log_error = None
     log_info = None
-
-
-def _ensure_user_site_on_path() -> None:
-    user_site = site.getusersitepackages()
-    if user_site:
-        site.addsitedir(user_site)
-
-
-def _bootstrap_dependencies() -> bool:
-    _ensure_user_site_on_path()
-    missing = [m for m in _REQUIRED if importlib.util.find_spec(m) is None]
-    if not missing:
-        return True
-    req = Path(__file__).with_name("requirements.txt")
-    _log_info(f"installing dependencies: {', '.join(missing)}")
-    try:
-        from pip._internal.cli.main import main as pip_main
-    except ImportError as exc:
-        _log_error(f"pip unavailable: {exc}")
-        return False
-
-    buf = io.StringIO()
-    saved_stdout, saved_stderr = sys.stdout, sys.stderr
-    sys.stdout = sys.stderr = buf
-    try:
-        rc = pip_main(
-            [
-                "install",
-                "--user",
-                "--quiet",
-                "--no-input",
-                "--disable-pip-version-check",
-                "--progress-bar",
-                "off",
-                "-r",
-                str(req),
-            ]
-        )
-    finally:
-        sys.stdout, sys.stderr = saved_stdout, saved_stderr
-
-    output = buf.getvalue().strip()
-    if rc != 0:
-        _log_error(f"pip install exited with {rc}\n{output}")
-        return False
-    if output:
-        _log_info(output)
-    _ensure_user_site_on_path()
-    importlib.invalidate_caches()
-    return all(importlib.util.find_spec(m) is not None for m in _REQUIRED)
 
 
 def _log_info(message: str) -> None:
@@ -78,9 +20,6 @@ def _log_error(message: str) -> None:
 
 
 if PluginCommand is not None:
-    if not _bootstrap_dependencies():
-        raise ImportError("binja-codemode-mcp: failed to install required dependencies")
-
     from . import server, settings  # noqa: E402
 
     settings.register()
@@ -100,9 +39,9 @@ if PluginCommand is not None:
     def _show_token(_=None) -> None:
         token = server.auth_token()
         if token is None:
-            log_info("Binja Codemode MCP auth token: not required for loopback bind")
+            _log_info("auth token: not required for loopback bind")
         else:
-            log_info(f"Binja Codemode MCP auth token: {token}")
+            _log_info(f"auth token: {token}")
 
     PluginCommand.register(
         "Binja Codemode MCP\\Start",
