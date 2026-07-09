@@ -1,6 +1,6 @@
 # Binary Analysis Workflows
 
-Use these workflows as starting points for Python code passed to `execute()`. Adapt paths, addresses, names, and filters to the user's task. Keep output concise.
+Use these snippets as starting points for Python passed to `execute()`. Adjust paths, addresses, names, and filters for the user's task. Keep the output short.
 
 ## Load a Binary Once
 
@@ -21,7 +21,7 @@ print('counts', {
 
 ## Create Small Helper Functions
 
-Helpers persist in the session and reduce repetition. When output structure matters, do not encode it with indentation alone; use braces, BEGIN/END markers, node IDs with edge lists, JSON, or S-expressions.
+Helpers stay in the session and save repeated work. If output structure matters, do not rely on indentation alone; use braces, BEGIN/END markers, node IDs with edge lists, JSON, or S-expressions.
 
 ```python
 from itertools import islice
@@ -43,7 +43,7 @@ def line_text(line):
     return ''.join(tok.text for tok in tokens)
 
 def print_braced_lines(lines, max_lines=120):
-    # For Binary Ninja text lines whose nesting may otherwise be indentation-only.
+    # Binary Ninja text lines can hide nesting in indentation only.
     rendered = [line_text(line).rstrip() for line in islice(lines, max_lines)]
     has_block_braces = any(
         line.strip() in {'{', '}'} or line.rstrip().endswith('{') or line.lstrip().startswith('}')
@@ -167,7 +167,7 @@ for value in constants:
         print(' ', hex(addr), name)
 ```
 
-If this is too slow, narrow to selected functions or use `bv.find_all_constant(...)` if appropriate for the binary and architecture.
+If this is too slow, narrow it to selected functions or try `bv.find_all_constant(...)` when it fits the binary and architecture.
 
 ## Scan MLIL or HLIL for Operations
 
@@ -226,7 +226,7 @@ for sec in bv.sections:
 
 ## Handle Large Results Safely
 
-When the result may be large:
+When a result may be large:
 
 1. Count first.
 2. Filter by name, address range, section, operation, or keyword.
@@ -248,7 +248,7 @@ for score, f in sorted(candidates, reverse=True, key=lambda x: x[0])[:25]:
 
 ## State-Changing Workflows
 
-If the user asks for a change, first confirm the exact target and action. After explicit permission, use the smallest scoped mutation possible and report what changed.
+If the user asks for a change, confirm the exact target and action first. After they approve it, make the smallest useful mutation and report what changed.
 
 Example confirmation request:
 
@@ -256,4 +256,4 @@ Example confirmation request:
 This will rename function 0x401000 from sub_401000 to parse_header in the current Binary Ninja session. Do you want me to proceed?
 ```
 
-After permission, perform the change and print a concise confirmation. Do not combine unrelated mutations in one script unless the user approved the full batch.
+After permission, make the change and print a short confirmation. Do not bundle unrelated mutations into one script unless the user approved the whole batch.

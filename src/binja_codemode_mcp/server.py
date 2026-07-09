@@ -25,9 +25,9 @@ def execute(
         str,
         Field(
             description=(
-                "Python code to execute. Print concise, filtered results; use "
+                "Python code to run. Print concise, filtered results; use "
                 "dir/help/inspect for API discovery. Do not print full object "
-                "dumps or large collections unless requested."
+                "dumps or large collections unless the user asks for them."
             )
         ),
     ],
@@ -35,7 +35,7 @@ def execute(
     """Execute code.
 
     Prefer small scripts that print filtered summaries. Do not dump whole Binary
-    Ninja objects or large collections unless explicitly requested.
+    Ninja objects or large collections unless the user asks for them.
     """
     return run(code)
 
@@ -61,23 +61,11 @@ def _configure_server_logs(handler: logging.Handler) -> None:
     logging.getLogger("uvicorn.access").disabled = True
 
 
-def _quiet_server_logs() -> None:
-    _configure_server_logs(_BNHandler())
-
-
-def _cli_server_logs() -> None:
-    _configure_server_logs(logging.StreamHandler())
-
-
-def _parse_bind(value: str) -> tuple[str, int]:
-    host, sep, port = value.rpartition(":")
-    if not sep:
-        raise ValueError(f"invalid bind '{value}', expected host:port")
-    return host, int(port)
-
-
 def _validated_bind(bind: str) -> tuple[str, int]:
-    host, port = _parse_bind(bind)
+    host, sep, port = bind.rpartition(":")
+    if not sep:
+        raise ValueError(f"invalid bind '{bind}', expected host:port")
+    port = int(port)
     if host not in LOOPBACK and not os.environ.get("BINJA_CODEMODE_MCP_INSECURE_BIND"):
         raise ValueError(
             f"refusing to bind non-loopback host '{host}'. "
@@ -130,23 +118,28 @@ def start(bind: str) -> None:
         log_error(str(exc), logger=LOGGER)
         return
 
-    _quiet_server_logs()
+    _configure_server_logs(_BNHandler())
     loop = asyncio.new_event_loop()
 
     async def _serve() -> None:
+        global _loop, _task, _thread
         try:
             await _run_http(host, port)
         except asyncio.CancelledError:
             pass
         except BaseException as exc:
             log_error(f"server crashed: {exc!r}", logger=LOGGER)
+        finally:
+            if _loop is loop:
+                _loop, _task, _thread = None, None, None
+            loop.call_soon(loop.stop)
 
+    _loop = loop
     _thread = threading.Thread(
         target=_run_loop, args=(loop,), daemon=True, name="binja-codemode-mcp-http"
     )
     _thread.start()
     _task = asyncio.run_coroutine_threadsafe(_serve(), loop)
-    _loop = loop
     log_info(f"listening on http://{host}:{port}/mcp/", logger=LOGGER)
 
 
@@ -157,18 +150,19 @@ def stop() -> None:
         return
     loop = _loop
     task = _task
+    thread = _thread
     if task is not None:
         task.cancel()
     loop.call_soon_threadsafe(loop.stop)
-    if _thread is not None:
-        _thread.join(timeout=2)
+    if thread is not None:
+        thread.join(timeout=2)
     _loop, _task, _thread = None, None, None
     log_info("stopped", logger=LOGGER)
 
 
 def serve(bind: str = DEFAULT_BIND) -> None:
     host, port = _validated_bind(bind)
-    _cli_server_logs()
+    _configure_server_logs(logging.StreamHandler())
     print(f"{LOGGER}: listening on http://{host}:{port}/mcp/", flush=True)
     try:
         asyncio.run(_run_http(host, port))

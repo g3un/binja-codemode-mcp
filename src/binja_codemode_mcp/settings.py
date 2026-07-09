@@ -15,8 +15,7 @@ def register() -> None:
                 "default": "127.0.0.1:44044",
                 "description": (
                     "host:port for the MCP HTTP server. Non-loopback hosts "
-                    "require the BINJA_CODEMODE_MCP_INSECURE_BIND environment "
-                    "variable."
+                    "require BINJA_CODEMODE_MCP_INSECURE_BIND."
                 ),
             }
         ),

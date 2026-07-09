@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from threading import RLock
 from typing import Protocol
 
@@ -19,15 +19,13 @@ class Transport(Protocol):
 class GatewaySession:
     id: str
     transport: Transport
-    created_at: float = field(default_factory=time.time)
-    metadata: dict = field(default_factory=dict)
+    created_at: float
 
     def describe(self) -> dict:
         return {
             "session_id": self.id,
             "created_at": self.created_at,
             "transport": self.transport.describe(),
-            "metadata": self.metadata,
         }
 
 
@@ -36,11 +34,11 @@ class GatewaySessionRegistry:
         self._lock = RLock()
         self._sessions: dict[str, GatewaySession] = {}
 
-    def add(self, transport: Transport, metadata: dict | None = None) -> GatewaySession:
+    def add(self, transport: Transport) -> GatewaySession:
         session = GatewaySession(
-            id=_new_id(),
+            id=uuid.uuid4().hex,
             transport=transport,
-            metadata=metadata or {},
+            created_at=time.time(),
         )
         with self._lock:
             self._sessions[session.id] = session
@@ -64,7 +62,3 @@ class GatewaySessionRegistry:
         with self._lock:
             sessions = list(self._sessions.values())
         return [session.describe() for session in sessions]
-
-
-def _new_id() -> str:
-    return uuid.uuid4().hex

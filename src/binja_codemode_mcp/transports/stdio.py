@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import sys
 
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport as FastMCPStdioTransport
+
+from ._result import result_data
 
 
 class StdioTransport:
@@ -27,6 +30,7 @@ class StdioTransport:
         )
         self._client = Client(self._transport)
         self._entered = False
+        self._lock = asyncio.Lock()
 
     def describe(self) -> dict:
         return {
@@ -37,11 +41,13 @@ class StdioTransport:
         }
 
     async def execute(self, code: str) -> dict:
-        client = await self._connect()
-        return _result_data(await client.call_tool("execute", {"code": code}))
+        async with self._lock:
+            client = await self._connect()
+            return result_data(await client.call_tool("execute", {"code": code}))
 
     async def close(self) -> dict:
-        await self.aclose()
+        async with self._lock:
+            await self.aclose()
         return {"closed": True}
 
     async def aclose(self) -> None:
@@ -54,13 +60,3 @@ class StdioTransport:
             await self._client.__aenter__()
             self._entered = True
         return self._client
-
-
-def _result_data(result) -> dict:
-    data = getattr(result, "data", None)
-    if isinstance(data, dict):
-        return data
-    structured = getattr(result, "structured_content", None)
-    if isinstance(structured, dict):
-        return structured
-    return {"result": data}

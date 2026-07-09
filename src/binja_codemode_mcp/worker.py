@@ -16,9 +16,9 @@ def execute(
         str,
         Field(
             description=(
-                "Python code to execute. Print concise, filtered results; use "
+                "Python code to run. Print concise, filtered results; use "
                 "dir/help/inspect for API discovery. Do not print full object "
-                "dumps or large collections unless requested."
+                "dumps or large collections unless the user asks for them."
             )
         ),
     ],
@@ -26,7 +26,7 @@ def execute(
     """Execute code.
 
     Prefer small scripts that print filtered summaries. Do not dump whole Binary
-    Ninja objects or large collections unless explicitly requested.
+    Ninja objects or large collections unless the user asks for them.
     """
     return run(code)
 
