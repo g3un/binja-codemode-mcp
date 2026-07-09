@@ -1,6 +1,6 @@
 [project]
 name = "binja-codemode-mcp"
-version = "1.20260627.0"
+version = "1.20260709.0"
 description = "A codemode MCP for Binary Ninja."
 readme = "README.md"
 requires-python = ">=3.10"
