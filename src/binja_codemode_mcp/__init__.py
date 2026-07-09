@@ -36,6 +36,13 @@ if PluginCommand is not None:
     def _can_stop(_=None) -> bool:
         return server.is_running()
 
+    def _show_token(_=None) -> None:
+        token = server.auth_token()
+        if token is None:
+            _log_info("auth token: not required for loopback bind")
+        else:
+            _log_info(f"auth token: {token}")
+
     PluginCommand.register(
         "Binja Codemode MCP\\Start",
         "Start Binja Codemode MCP server",
@@ -46,6 +53,12 @@ if PluginCommand is not None:
         "Binja Codemode MCP\\Stop",
         "Stop Binja Codemode MCP server",
         _stop,
+        is_valid=_can_stop,
+    )
+    PluginCommand.register(
+        "Binja Codemode MCP\\Show Auth Token",
+        "Show the current Binja Codemode MCP bearer token",
+        _show_token,
         is_valid=_can_stop,
     )
 

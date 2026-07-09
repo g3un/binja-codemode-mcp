@@ -47,9 +47,15 @@ async def create_session(
             )
         ),
     ],
+    auth_token: Annotated[
+        str | None,
+        Field(
+            description="Bearer token for http sessions, if the server requires one."
+        ),
+    ] = None,
 ) -> dict:
     """Create a session. Uses BINJA_CODEMODE_MCP_HTTP_URL for http."""
-    session_transport = _make_transport(transport)
+    session_transport = _make_transport(transport, auth_token)
     session = _sessions.add(session_transport)
     return session.describe()
 
@@ -107,9 +113,12 @@ def list_sessions() -> dict:
     return {"sessions": _sessions.list()}
 
 
-def _make_transport(transport: str):
+def _make_transport(transport: str, auth_token: str | None = None):
     if transport == "http":
-        return HttpTransport(url=os.environ.get(HTTP_URL_ENV, DEFAULT_HTTP_URL))
+        return HttpTransport(
+            url=os.environ.get(HTTP_URL_ENV, DEFAULT_HTTP_URL),
+            auth_token=auth_token,
+        )
     if transport == "stdio":
         worker = plugin_python()
         return StdioTransport(

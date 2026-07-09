@@ -80,8 +80,9 @@ Pick the transport that matches where Binary Ninja is running:
   over HTTP on purpose.
 
 For an `http` session from the GUI, start the server with
-`Binja Codemode MCP\Start`. The plugin also adds settings for the HTTP bind
-address (`host:port`) and autostart.
+`Binja Codemode MCP\Start`. The generated bearer token is logged and can be
+shown again with `Binja Codemode MCP\Show Auth Token`. The plugin also adds
+settings for the HTTP bind address (`host:port`) and autostart.
 
 For an `http` session from a headless environment, use a Python that can import
 Binary Ninja and run:
@@ -92,9 +93,12 @@ uv run --directory /path/to/binja-codemode-mcp serve
 
 Headless Binary Ninja requires Binary Ninja Commercial or higher.
 
+Loopback binds do not require auth. Non-loopback binds generate and print an
+auth token on startup. HTTP clients send it as `Authorization: Bearer <token>`;
+for gateway sessions, pass `auth_token` to
+`create_session(transport="http", auth_token="...")`.
+
 ## Environment
 
 - `BINJA_CODEMODE_MCP_HTTP_URL`: MCP HTTP endpoint for gateway `http` sessions.
   Defaults to `http://127.0.0.1:44044/mcp/`.
-- `BINJA_CODEMODE_MCP_INSECURE_BIND`: set this in the Binary Ninja process only
-  if you really want the HTTP server to bind to a non-loopback host.
