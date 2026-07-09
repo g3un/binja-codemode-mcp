@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import asyncio
 
-from binja_codemode_mcp.auth import PREFIX, EphemeralApiKeyVerifier, generate_api_key, parse_api_key
+from binja_codemode_mcp.auth import (
+    PREFIX,
+    EphemeralApiKeyVerifier,
+    generate_api_key,
+    parse_api_key,
+)
 
 
 def test_generate_api_key_format_and_parse() -> None:

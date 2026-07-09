@@ -49,7 +49,9 @@ async def create_session(
     ],
     auth_token: Annotated[
         str | None,
-        Field(description="Bearer token for http sessions, if the server requires one."),
+        Field(
+            description="Bearer token for http sessions, if the server requires one."
+        ),
     ] = None,
 ) -> dict:
     """Create a session. Uses BINJA_CODEMODE_MCP_HTTP_URL for http."""
