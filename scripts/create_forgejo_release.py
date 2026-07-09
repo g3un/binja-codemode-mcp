@@ -52,7 +52,7 @@ def main() -> None:
         print(f"Release tag matches pyproject.toml version: {tag_name}")
         return
 
-    server_url = trim_trailing_slash(require_env("FORGEJO_SERVER_URL"))
+    server_url = require_env("FORGEJO_SERVER_URL").rstrip("/")
     repository = require_env("FORGEJO_REPOSITORY")
     token = require_env("FORGEJO_TOKEN")
 
@@ -168,10 +168,6 @@ def require_env(name: str) -> str:
     if not value:
         fail(f"{name} is required.")
     return value
-
-
-def trim_trailing_slash(value: str) -> str:
-    return value.rstrip("/")
 
 
 def fail_response(message: str, response: Response) -> None:

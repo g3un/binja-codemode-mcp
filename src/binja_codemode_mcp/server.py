@@ -61,23 +61,11 @@ def _configure_server_logs(handler: logging.Handler) -> None:
     logging.getLogger("uvicorn.access").disabled = True
 
 
-def _quiet_server_logs() -> None:
-    _configure_server_logs(_BNHandler())
-
-
-def _cli_server_logs() -> None:
-    _configure_server_logs(logging.StreamHandler())
-
-
-def _parse_bind(value: str) -> tuple[str, int]:
-    host, sep, port = value.rpartition(":")
-    if not sep:
-        raise ValueError(f"invalid bind '{value}', expected host:port")
-    return host, int(port)
-
-
 def _validated_bind(bind: str) -> tuple[str, int]:
-    host, port = _parse_bind(bind)
+    host, sep, port = bind.rpartition(":")
+    if not sep:
+        raise ValueError(f"invalid bind '{bind}', expected host:port")
+    port = int(port)
     if host not in LOOPBACK and not os.environ.get("BINJA_CODEMODE_MCP_INSECURE_BIND"):
         raise ValueError(
             f"refusing to bind non-loopback host '{host}'. "
@@ -130,7 +118,7 @@ def start(bind: str) -> None:
         log_error(str(exc), logger=LOGGER)
         return
 
-    _quiet_server_logs()
+    _configure_server_logs(_BNHandler())
     loop = asyncio.new_event_loop()
 
     async def _serve() -> None:
@@ -168,7 +156,7 @@ def stop() -> None:
 
 def serve(bind: str = DEFAULT_BIND) -> None:
     host, port = _validated_bind(bind)
-    _cli_server_logs()
+    _configure_server_logs(logging.StreamHandler())
     print(f"{LOGGER}: listening on http://{host}:{port}/mcp/", flush=True)
     try:
         asyncio.run(_run_http(host, port))

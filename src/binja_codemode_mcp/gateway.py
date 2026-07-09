@@ -50,9 +50,7 @@ async def create_session(
 ) -> dict:
     """Create a session. Env: BINJA_CODEMODE_MCP_HTTP_URL."""
     session_transport = _make_transport(transport)
-    session = _sessions.add(
-        transport=session_transport,
-    )
+    session = _sessions.add(session_transport)
     return session.describe()
 
 

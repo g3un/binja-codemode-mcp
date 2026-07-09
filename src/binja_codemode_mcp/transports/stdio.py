@@ -5,6 +5,8 @@ import sys
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport as FastMCPStdioTransport
 
+from ._result import result_data
+
 
 class StdioTransport:
     def __init__(
@@ -38,7 +40,7 @@ class StdioTransport:
 
     async def execute(self, code: str) -> dict:
         client = await self._connect()
-        return _result_data(await client.call_tool("execute", {"code": code}))
+        return result_data(await client.call_tool("execute", {"code": code}))
 
     async def close(self) -> dict:
         await self.aclose()
@@ -54,13 +56,3 @@ class StdioTransport:
             await self._client.__aenter__()
             self._entered = True
         return self._client
-
-
-def _result_data(result) -> dict:
-    data = getattr(result, "data", None)
-    if isinstance(data, dict):
-        return data
-    structured = getattr(result, "structured_content", None)
-    if isinstance(structured, dict):
-        return structured
-    return {"result": data}
